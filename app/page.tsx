@@ -222,6 +222,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openSkillGroup, setOpenSkillGroup] = useState<string | null>("Frontend");
   const [activeSection, setActiveSection] = useState("work");
+  const [navOnDark, setNavOnDark] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const reduceMotion = useReducedMotion();
@@ -275,6 +276,31 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const darkSections = Array.from(document.querySelectorAll<HTMLElement>(".expertise-section, .contact-section"));
+    let observer: IntersectionObserver;
+    const watchNavbar = () => {
+      observer?.disconnect();
+      const row = document.querySelector(".nav-top-row")!.getBoundingClientRect();
+      const midpoint = row.top + row.height / 2;
+      const visibleSections = new Set<Element>();
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) visibleSections.add(entry.target);
+          else visibleSections.delete(entry.target);
+        });
+        setNavOnDark(visibleSections.size > 0);
+      }, { rootMargin: `-${midpoint}px 0px -${Math.max(0, window.innerHeight - midpoint - 1)}px 0px` });
+      darkSections.forEach((section) => observer.observe(section));
+    };
+    watchNavbar();
+    window.addEventListener("resize", watchNavbar);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", watchNavbar);
+    };
+  }, []);
+
   const closeMenu = () => setMenuOpen(false);
 
   return (
@@ -283,7 +309,7 @@ export default function Home() {
       <PageProgress />
 
       <header className="nav-shell">
-        <nav className={`glass-nav${menuOpen ? " menu-open" : ""}`} aria-label="Primary navigation">
+        <nav className={`glass-nav${menuOpen ? " menu-open" : ""}${navOnDark ? " on-dark" : ""}`} aria-label="Primary navigation">
           <div className="nav-top-row">
             <a className="brand" href="#top" onClick={closeMenu} aria-label="Sairaj Dhuri, home">
               <span>SD</span>
@@ -402,45 +428,68 @@ export default function Home() {
         <div className="hero-copy">
           <motion.div
             className="hero-overline"
-            initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.2 }}
-            transition={{ delay: 0.15, duration: 0.6 }}
+            transition={{ delay: reduceMotion ? 0 : 0.05, duration: reduceMotion ? 0 : 0.6 }}
           >
             <span>Software</span><i /> <span>AI</span><i /> <span>Ideas</span>
           </motion.div>
           <motion.h1
             className="hero-name"
-            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            aria-label="Sairaj Dhuri"
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: false, amount: 0.2 }}
-            transition={{ delay: 0.25, duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
+            variants={{
+              hidden: {},
+              visible: { transition: { delayChildren: reduceMotion ? 0 : 0.12, staggerChildren: reduceMotion ? 0 : 0.12 } },
+            }}
           >
-            <span>Sairaj</span><br /><span>Dhuri</span>
+            {["Sairaj", "Dhuri"].map((name) => (
+              <span className="hero-name-line" aria-hidden="true" key={name}>
+                <motion.span
+                  variants={{ hidden: { opacity: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 20 }, visible: { opacity: 1, y: 0 } }}
+                  transition={{ duration: reduceMotion ? 0 : 0.85, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {name}
+                </motion.span>
+              </span>
+            ))}
           </motion.h1>
           <motion.div
             className="hero-role"
-            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.2 }}
-            transition={{ delay: 0.38, duration: 0.65 }}
+            transition={{ delay: reduceMotion ? 0 : 0.3, duration: reduceMotion ? 0 : 0.65 }}
           >
             <span>Full-stack developer</span><i /><span>AI engineer</span>
           </motion.div>
           <motion.p
-            initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+            className="hero-description"
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.2 }}
-            transition={{ delay: 0.42, duration: 0.7 }}
+            transition={{ delay: reduceMotion ? 0 : 0.38, duration: reduceMotion ? 0 : 0.7 }}
           >
-            Engineering end-to-end web products at the intersection<br />of full-stack dev and machine learning.
+            I build intelligent digital products that feel as good as they work.
+          </motion.p>
+          <motion.p
+            className="hero-support"
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ delay: reduceMotion ? 0 : 0.46, duration: reduceMotion ? 0 : 0.65 }}
+          >
+            Full-stack development, applied AI, and thoughtful product engineering.
           </motion.p>
           <motion.div
             className="hero-meta"
-            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.2 }}
-            transition={{ delay: 0.55, duration: 0.65 }}
+            transition={{ delay: reduceMotion ? 0 : 0.54, duration: reduceMotion ? 0 : 0.6 }}
           >
             <span>B.Tech ECE · AI &amp; ML</span><i /><span>MIT-WPU</span><i /><span>India</span>
           </motion.div>
@@ -448,10 +497,10 @@ export default function Home() {
 
         <motion.div
           className="portrait-stage"
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.96 }}
+          initial={reduceMotion ? false : { opacity: 0, scale: 0.975 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: false, amount: 0.2 }}
-          transition={{ delay: 0.32, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ delay: reduceMotion ? 0 : 0.18, duration: reduceMotion ? 0 : 1, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="portrait-card">
             <Image
@@ -459,7 +508,7 @@ export default function Home() {
               alt="Portrait of Sairaj Dhuri"
               fill
               preload
-              sizes="(max-width: 820px) 88vw, (max-width: 1100px) 38vw, 510px"
+              sizes="(max-width: 700px) 64vw, (max-width: 1100px) 38vw, 480px"
             />
             <div className="portrait-wash" />
             <div className="portrait-caption">
@@ -469,7 +518,7 @@ export default function Home() {
           </div>
         </motion.div>
 
-        <div className="hero-scroll-note"><span>Scroll to explore</span><i /></div>
+        <a className="hero-scroll-note" href="#work"><span>Scroll to explore</span><i aria-hidden="true" /></a>
       </section>
 
       <TechBar />
